@@ -86,3 +86,17 @@ export function useSentiment() {
   });
 }
 
+export function useCompetitors() {
+  const { dateRange, selectedPlatforms } = useFilterStore();
+  
+  return useQuery({
+    queryKey: ["analytics", "competitors", dateRange, selectedPlatforms],
+    queryFn: () => fetchAnalytics("competitors", {
+      from: format(dateRange.from, "yyyy-MM-dd"),
+      to: format(dateRange.to, "yyyy-MM-dd"),
+      platforms: selectedPlatforms,
+    }),
+  });
+}
+
+
