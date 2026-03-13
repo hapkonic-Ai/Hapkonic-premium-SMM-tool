@@ -3,13 +3,13 @@
 import { motion } from "framer-motion";
 import { ChartContainer } from "@/components/dashboard/ChartContainer";
 import { BarChart } from "@/components/charts/BarChart";
-import { useContentPerformance } from "@/hooks/useAnalytics";
+import { useContent } from "@/hooks/useAnalytics";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Play, Image as ImageIcon, Layout, Clock, Hash } from "lucide-react";
 
 export default function ContentPage() {
-  const { data, isLoading } = useContentPerformance();
+  const { data, isLoading } = useContent();
 
   return (
     <div className="space-y-8 pb-12">

@@ -5,6 +5,7 @@ import { ChartContainer } from "@/components/dashboard/ChartContainer";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { BarChart } from "@/components/charts/BarChart";
 import { useCompetitors } from "@/hooks/useAnalytics";
+import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   Trophy, TrendingUp, Users, Target, 
@@ -18,9 +19,24 @@ export default function CompetitorsPage() {
 
   return (
     <div className="space-y-8 pb-12">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black gradient-text tracking-tighter uppercase">Competitor Intelligence</h1>
-        <p className="text-text-muted text-sm uppercase tracking-[2px] font-bold">Benchmarking and strategic market positioning</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-black gradient-text tracking-tighter uppercase">Competitor Intelligence</h1>
+          <p className="text-text-muted text-sm uppercase tracking-[2px] font-bold">Benchmarking and strategic market positioning</p>
+        </div>
+        <div className="flex items-center gap-2 max-w-md w-full">
+           <div className="relative flex-1">
+             <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+             <input 
+               type="text" 
+               placeholder="Add competitor handle (e.g. @nike)..." 
+               className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-1 focus:ring-accent-cyan/50"
+             />
+           </div>
+           <Button className="h-11 px-6 uppercase font-black tracking-widest text-[10px]">
+              Track Handle
+           </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

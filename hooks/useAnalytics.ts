@@ -1,111 +1,79 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useFilterStore } from "@/stores/useFilterStore";
-import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 
-async function fetchAnalytics(endpoint: string, params: any) {
-  const queryParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]: [string, any]) => {
-    if (Array.isArray(value)) {
-      value.forEach((v) => queryParams.append(key, v));
-    } else {
-      queryParams.append(key, value);
-    }
-  });
+interface AnalyticsParams {
+  platforms?: string[];
+  from?: Date;
+  to?: Date;
+}
 
-  const response = await fetch(`/api/analytics/${endpoint}?${queryParams.toString()}`);
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
+const fetchAnalytics = async (endpoint: string, params: AnalyticsParams) => {
+  const searchParams = new URLSearchParams();
+  if (params.platforms) {
+    params.platforms.forEach(p => searchParams.append("platforms", p));
   }
+  if (params.from) searchParams.append("from", params.from.toISOString());
+  if (params.to) searchParams.append("to", params.to.toISOString());
+
+  const response = await fetch(`/api/analytics/${endpoint}?${searchParams.toString()}`);
+  if (!response.ok) throw new Error("Failed to fetch analytics");
   return response.json();
-}
+};
 
-export function useOverview() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useOverview = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "overview", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("overview", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "overview", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("overview", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useContentPerformance() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useAudience = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "content", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("content", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "audience", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("audience", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useAudienceAnalytics() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useContent = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "audience", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("audience", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "content", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("content", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useEngagementAnalytics() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useEngagement = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "engagement", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("engagement", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "engagement", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("engagement", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useSentiment() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useSentiment = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "sentiment", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("sentiment", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "sentiment", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("sentiment", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useCompetitors() {
-  const { dateRange, selectedPlatforms } = useFilterStore();
-  
+export const useCompetitors = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "competitors", dateRange, selectedPlatforms],
-    queryFn: () => fetchAnalytics("competitors", {
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      platforms: selectedPlatforms,
-    }),
+    queryKey: ["analytics", "competitors", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("competitors", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
+};
 
-export function useAlerts() {
+export const useAlerts = () => {
+  const { selectedPlatforms, dateRange } = useFilterStore();
   return useQuery({
-    queryKey: ["analytics", "alerts"],
-    queryFn: () => fetchAnalytics("alerts", {}),
-    refetchInterval: 30000, // Refresh every 30s
+    queryKey: ["analytics", "alerts", selectedPlatforms, dateRange],
+    queryFn: () => fetchAnalytics("alerts", { platforms: selectedPlatforms, from: dateRange.from, to: dateRange.to }),
   });
-}
-
-
-
+};

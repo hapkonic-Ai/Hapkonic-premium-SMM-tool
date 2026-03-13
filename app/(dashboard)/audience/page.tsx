@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 import { ChartContainer } from "@/components/dashboard/ChartContainer";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { BarChart } from "@/components/charts/BarChart";
-import { useAudienceAnalytics } from "@/hooks/useAnalytics";
+import { useAudience } from "@/hooks/useAnalytics";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MapPin, Globe, User, Languages } from "lucide-react";
 
 export default function AudiencePage() {
-  const { data, isLoading } = useAudienceAnalytics();
+  const { data, isLoading } = useAudience();
 
   return (
     <div className="space-y-8 pb-12">

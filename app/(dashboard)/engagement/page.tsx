@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 import { ChartContainer } from "@/components/dashboard/ChartContainer";
 import { LineChart } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
-import { useEngagementAnalytics } from "@/hooks/useAnalytics";
+import { useEngagement } from "@/hooks/useAnalytics";
 import { MessageCircle, Heart, Share2, Bookmark } from "lucide-react";
 import { MetricWidget } from "@/components/dashboard/MetricWidget";
 
 export default function EngagementPage() {
-  const { data, isLoading } = useEngagementAnalytics();
+  const { data, isLoading } = useEngagement();
 
   return (
     <div className="space-y-8 pb-12">

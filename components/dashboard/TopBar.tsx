@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Search, Bell, User, ChevronDown, Command } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,14 +25,14 @@ export const TopBar = () => {
 
       {/* Right Actions */}
       <div className="flex items-center gap-4">
-        <button className="p-2 rounded-lg hover:bg-white/5 transition-colors relative">
+        <Link href="/alerts" className="p-2 rounded-lg hover:bg-white/5 transition-colors relative block">
           <Bell className="w-5 h-5 text-text-secondary" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-accent-pink rounded-full border-2 border-[#06060E]" />
-        </button>
+        </Link>
 
         <div className="h-8 w-[1px] bg-glass-border mx-2" />
 
-        <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-white/5 transition-all group">
+        <Link href="/settings/profile" className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-white/5 transition-all group">
           <div className="text-right hidden sm:block">
             <div className="text-xs font-bold text-white leading-tight">Admin User</div>
             <div className="text-[10px] text-text-muted leading-tight uppercase tracking-wider">Premium Plan</div>
@@ -40,7 +41,7 @@ export const TopBar = () => {
             AU
           </div>
           <ChevronDown className="w-4 h-4 text-text-muted" />
-        </button>
+        </Link>
       </div>
     </header>
   );

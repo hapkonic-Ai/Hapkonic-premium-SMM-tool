@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { cn } from "@/lib/utils";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { useSidebarStore } from "@/stores/useSidebarStore";
 

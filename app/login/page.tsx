@@ -22,8 +22,19 @@ function LoginForm() {
   const registered = searchParams.get("registered");
 
   useEffect(() => {
-    if (searchParams.get("error")) {
-      setError("Invalid credentials. Please check your email and password.");
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam === "OAuthSignin") {
+        setError("Error starting OAuth session. Please check your network or provider config.");
+      } else if (errorParam === "OAuthCallback") {
+        setError("Error during OAuth callback. Your credentials might not be accepted.");
+      } else if (errorParam === "OAuthCreateAccount") {
+        setError("Could not link this social profile. Please try another account.");
+      } else if (errorParam === "Callback") {
+        setError("Authentication callback failed. Check your environment configuration.");
+      } else {
+        setError(`Auth Error: ${errorParam}`);
+      }
     }
   }, [searchParams]);
 

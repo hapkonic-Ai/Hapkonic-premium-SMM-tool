@@ -1,25 +1,36 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { db } from "@/lib/db";
 import { format, subDays } from "date-fns";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return new NextResponse("Unauthorized", { status: 401 });
+
+  const connectedAccounts = await db.socialAccount.findMany({
+    where: { userId: (session.user as any).id },
+    select: { platform: true }
+  });
+  
+  const hasConnections = connectedAccounts.length > 0;
+
   const days = 30;
   const engagementTrend = Array.from({ length: days }).map((_, i) => ({
     date: format(subDays(new Date(), days - i), "MMM dd"),
-    likes: Math.floor(Math.random() * 500) + 100,
-    comments: Math.floor(Math.random() * 100) + 20,
-    shares: Math.floor(Math.random() * 50) + 5,
-    saves: Math.floor(Math.random() * 80) + 10,
+    likes: hasConnections ? Math.floor(Math.random() * 500) + 100 : 0,
+    comments: hasConnections ? Math.floor(Math.random() * 100) + 20 : 0,
+    shares: hasConnections ? Math.floor(Math.random() * 50) + 5 : 0,
+    saves: hasConnections ? Math.floor(Math.random() * 80) + 10 : 0,
   }));
-
-  const engagementByType = [
-    { type: "Polls", engagement: 15.2 },
-    { type: "Q&A", engagement: 12.8 },
-    { type: "Direct Messages", engagement: 8.5 },
-    { type: "Reactions", engagement: 22.1 },
-  ];
 
   return NextResponse.json({
     engagementTrend,
-    engagementByType,
+    engagementByType: [
+      { type: "Polls", engagement: hasConnections ? 15.2 : 0 },
+      { type: "Q&A", engagement: hasConnections ? 12.8 : 0 },
+      { type: "Direct Messages", engagement: hasConnections ? 8.5 : 0 },
+      { type: "Reactions", engagement: hasConnections ? 22.1 : 0 },
+    ],
   });
 }

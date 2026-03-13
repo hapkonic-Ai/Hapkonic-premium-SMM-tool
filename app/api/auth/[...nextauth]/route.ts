@@ -2,18 +2,21 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import TwitterProvider from "next-auth/providers/twitter";
+import LinkedInProvider from "next-auth/providers/linkedin";
+import InstagramProvider from "next-auth/providers/instagram";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db),
+  // Removing adapter to have full manual control over user/account creation and linking
+  // which avoids issues with non-standard schema or missing tables
   session: {
     strategy: "jwt",
   },
   providers: [
     CredentialsProvider({
+      id: "credentials",
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -42,67 +45,107 @@ export const authOptions: NextAuthOptions = {
       }
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
+      clientId: process.env.GOOGLE_CLIENT_ID || "placeholder",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "placeholder",
     }),
     FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID!,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+      clientId: process.env.FACEBOOK_CLIENT_ID || "placeholder",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "placeholder",
     }),
     TwitterProvider({
-      clientId: process.env.TWITTER_CLIENT_ID!,
-      clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+      clientId: process.env.TWITTER_CLIENT_ID || "placeholder",
+      clientSecret: process.env.TWITTER_CLIENT_SECRET || "placeholder",
       version: "2.0",
     }),
-    {
-      id: "linkedin",
-      name: "LinkedIn",
-      type: "oauth",
-      authorization: "https://www.linkedin.com/oauth/v2/authorization?scope=r_liteprofile%20r_emailaddress",
-      token: "https://www.linkedin.com/oauth/v2/accessToken",
-      userinfo: "https://api.linkedin.com/v2/me",
-      clientId: process.env.LINKEDIN_CLIENT_ID,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      profile(profile) {
-        return {
-          id: profile.id,
-          name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
-          email: null,
-          image: null,
-        }
-      },
-    },
-    {
-      id: "instagram",
-      name: "Instagram",
-      type: "oauth",
-      authorization: "https://api.instagram.com/oauth/authorize?scope=user_profile,user_media",
-      token: "https://api.instagram.com/oauth/access_token",
-      userinfo: "https://graph.instagram.com/me?fields=id,username,account_type",
-      clientId: process.env.INSTAGRAM_CLIENT_ID,
-      clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
-      profile(profile) {
-        return {
-          id: profile.id,
-          name: profile.username,
-          email: null,
-          image: null,
-        }
-      },
-    },
+    LinkedInProvider({
+      clientId: process.env.LINKEDIN_CLIENT_ID || "placeholder",
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET || "placeholder",
+    }),
+    InstagramProvider({
+      clientId: process.env.INSTAGRAM_CLIENT_ID || "placeholder",
+      clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || "placeholder",
+    }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (!account || !user) return true;
+
+      if (account.provider !== "credentials") {
+        const platform = account.provider.toUpperCase() as any;
+        
+        // Manual account linking logic
+        // If we have an email from the social provider, try to find the user
+        let targetUser = await db.user.findUnique({
+          where: { email: user.email || "" }
+        });
+
+        // If user doesn't exist, we might create them or fail if this is a "connect only" flow
+        // For this project, social providers can also be used for login
+        if (!targetUser) {
+          targetUser = await db.user.create({
+            data: {
+              email: user.email || `${account.provider}_${account.providerAccountId}@placeholder.com`,
+              name: user.name || (profile as any)?.username || "User",
+              image: user.image,
+            }
+          });
+        }
+
+        // Link/Update the SocialAccount
+        const existingSocialAccount = await db.socialAccount.findFirst({
+          where: {
+            platform: platform,
+            userId: targetUser.id
+          }
+        });
+
+        const socialData = {
+          platform,
+          userId: targetUser.id,
+          accessToken: account.access_token || "",
+          refreshToken: account.refresh_token || null,
+          username: (profile as any)?.username || (profile as any)?.name || user.name || "Unknown",
+          profileUrl: (profile as any)?.link || null,
+        };
+
+        if (existingSocialAccount) {
+          await db.socialAccount.update({
+            where: { id: existingSocialAccount.id },
+            data: {
+              accessToken: socialData.accessToken,
+              refreshToken: socialData.refreshToken,
+              updatedAt: new Date()
+            }
+          });
+        } else {
+          // Get or create organization
+          let orgId = targetUser.orgId;
+          if (!orgId) {
+            const org = await db.organization.create({
+              data: { name: `${targetUser.name}'s Workspace` }
+            });
+            orgId = org.id;
+            await db.user.update({
+              where: { id: targetUser.id },
+              data: { orgId }
+            });
+          }
+
+          await db.socialAccount.create({
+            data: {
+              ...socialData,
+              orgId: orgId!
+            }
+          });
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).orgId = token.orgId;
       }
       return session;
     },
@@ -110,10 +153,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.orgId = (user as any).orgId;
       }
-      
-      // If an account is linked via OAuth, we might want to store more info here
-      // But for now we just maintain the platform session
       return token;
     },
   },

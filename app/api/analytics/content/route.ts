@@ -1,30 +1,53 @@
 import { NextResponse } from "next/server";
-import { format, subDays } from "date-fns";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { db } from "@/lib/db";
 
 export async function GET(request: Request) {
-  const posts = Array.from({ length: 8 }).map((_, i) => ({
-    id: `post-${i}`,
-    content: `Mastering the art of digital strategy with Hapkonic ${i + 1}`,
-    thumbnail: `/images/mock-post-${(i % 3) + 1}.jpg`,
-    platform: ["INSTAGRAM", "FACEBOOK", "TWITTER", "LINKEDIN"][i % 4],
-    publishedAt: format(subDays(new Date(), i * 2), "yyyy-MM-dd"),
-    metrics: {
-      reach: Math.floor(Math.random() * 15000) + 2000,
-      engagement: Math.floor(Math.random() * 800) + 100,
-      shares: Math.floor(Math.random() * 200) + 20,
-      likes: Math.floor(Math.random() * 1000) + 500,
-    },
-  }));
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return new NextResponse("Unauthorized", { status: 401 });
 
-  const contentTypeStats = [
-    { type: "Video", reach: 45000, engagement: 8.4 },
-    { type: "Image", reach: 28000, engagement: 5.2 },
-    { type: "Carousel", reach: 35000, engagement: 7.1 },
-    { type: "Story", reach: 12000, engagement: 12.5 },
-  ];
+  const connectedAccounts = await db.socialAccount.findMany({
+    where: { userId: (session.user as any).id },
+    select: { platform: true }
+  });
+  
+  const hasConnections = connectedAccounts.length > 0;
+
+  const topPosts = hasConnections ? [
+    {
+      id: "1",
+      platform: "Instagram",
+      type: "REEL",
+      caption: "Our summer collection is finally here! 🌴 #fashion #summer",
+      engagement: 12543,
+      reach: 45000,
+      likes: 11200,
+      comments: 1343,
+      date: "2024-06-12",
+      thumbnail: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=400&fit=crop"
+    },
+    {
+      id: "2",
+      platform: "LinkedIn",
+      type: "ARTICLE",
+      caption: "How Hapkonic is revolutionizing SMM with AI-driven insights.",
+      engagement: 3421,
+      reach: 12000,
+      likes: 2900,
+      comments: 521,
+      date: "2024-06-10",
+      thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop"
+    }
+  ] : [];
 
   return NextResponse.json({
-    posts,
-    contentTypeStats,
+    topPosts,
+    contentMix: [
+      { type: "Video", value: 45 },
+      { type: "Images", value: 30 },
+      { type: "Links", value: 15 },
+      { type: "Text", value: 10 },
+    ]
   });
 }
