@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -28,7 +27,7 @@ model Organization {
   name        String
   industry    String?
   logo        String?
-  plan        String   @default("FREE")
+  plan        String   @default( "FREE")
   settings    Json?
   users       User[]
   accounts    SocialAccount[]
