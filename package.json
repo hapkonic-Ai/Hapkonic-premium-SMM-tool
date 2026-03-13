@@ -18,8 +18,10 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@tanstack/react-query": "^5.90.21",
+    "@types/bcryptjs": "^2.4.6",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -33,6 +35,7 @@
     "recharts": "^3.8.0",
     "tailwind-merge": "^3.5.0",
     "three": "^0.183.2",
+    "tsx": "^4.21.0",
     "ws": "^8.19.0",
     "zustand": "^5.0.11"
   },
