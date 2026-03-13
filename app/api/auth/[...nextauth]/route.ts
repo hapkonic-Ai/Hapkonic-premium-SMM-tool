@@ -51,6 +51,11 @@ export const authOptions: NextAuthOptions = {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID || "placeholder",
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "placeholder",
+      authorization: {
+        params: {
+          scope: "email,public_profile,instagram_basic,instagram_manage_insights,pages_read_engagement,pages_show_list,pages_manage_posts"
+        }
+      }
     }),
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID || "placeholder",
