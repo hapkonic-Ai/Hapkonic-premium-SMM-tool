@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 
 export default function DashboardLayout({
   children,
@@ -9,16 +10,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
-      {/* Sidebar - fixed width will be handled by Sidebar itself */}
+    <div className="flex min-h-screen bg-background text-foreground overflow-hidden">
       <Sidebar />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col pl-20 md:pl-20 transition-all duration-300 SidebarExpanded:pl-64">
-        {/* We'll use a CSS class or data attribute to handle the margin shift if needed, 
-            but for now, simpler calc or static padding suffices */}
+      <div className="flex flex-col flex-1 relative overflow-hidden">
         <TopBar />
-        <main className="p-8 max-w-[1600px] mx-auto w-full flex-1">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative z-10">
+          <FilterBar />
           {children}
         </main>
       </div>
