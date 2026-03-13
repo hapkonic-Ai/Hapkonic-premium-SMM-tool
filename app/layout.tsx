@@ -3,6 +3,8 @@ import { Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
+
 
 const outfit = Outfit({
   variable: "--font-outfit",
