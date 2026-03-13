@@ -10,8 +10,10 @@ import {
   Trophy, TrendingUp, Users, Target, 
   ExternalLink, Zap, ShieldAlert
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CompetitorsPage() {
+
   const { data, isLoading } = useCompetitors();
 
   return (

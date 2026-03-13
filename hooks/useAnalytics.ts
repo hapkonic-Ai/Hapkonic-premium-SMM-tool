@@ -99,4 +99,13 @@ export function useCompetitors() {
   });
 }
 
+export function useAlerts() {
+  return useQuery({
+    queryKey: ["analytics", "alerts"],
+    queryFn: () => fetchAnalytics("alerts", {}),
+    refetchInterval: 30000, // Refresh every 30s
+  });
+}
+
+
 
