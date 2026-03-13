@@ -66,10 +66,6 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.LINKEDIN_CLIENT_ID || "placeholder",
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET || "placeholder",
     }),
-    InstagramProvider({
-      clientId: process.env.INSTAGRAM_CLIENT_ID || "placeholder",
-      clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || "placeholder",
-    }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {

@@ -48,9 +48,8 @@ export default function ConnectionsPage() {
   }, []);
 
   const platforms = [
-    { id: "instagram", name: "Instagram", key: "INSTAGRAM" },
-    { id: "facebook", name: "Facebook", key: "FACEBOOK" },
-    { id: "twitter", name: "Twitter", key: "TWITTER" },
+    { id: "facebook", name: "Facebook & Instagram", key: "FACEBOOK", icon: <Facebook className="w-5 h-5 text-blue-500" /> },
+    { id: "twitter", name: "Twitter (X)", key: "TWITTER" },
     { id: "linkedin", name: "LinkedIn", key: "LINKEDIN" },
   ];
 
@@ -84,7 +83,9 @@ export default function ConnectionsPage() {
                       {isConnected ? (
                         <p className="text-xs text-accent-green font-mono">{account.username}</p>
                       ) : (
-                        <p className="text-xs text-text-muted">Not connected</p>
+                        <p className="text-xs text-text-muted">
+                          {p.id === "facebook" ? "Login with Facebook to manage IG & FB Pages" : "Not connected"}
+                        </p>
                       )}
                     </div>
                   </div>
