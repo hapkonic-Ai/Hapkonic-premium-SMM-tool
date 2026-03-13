@@ -4,13 +4,53 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
-import { Orbit, Instagram, Twitter, Facebook, Github } from "lucide-react";
+import { Orbit, Instagram, Twitter, Facebook, Github, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered");
+
+  useEffect(() => {
+    if (searchParams.get("error")) {
+      setError("Invalid credentials. Please check your email and password.");
+    }
+  }, [searchParams]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (res?.error) {
+        setError("Invalid credentials. Please try again.");
+      } else {
+        router.push("/overview");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen relative flex items-center justify-center p-6 bg-background overflow-hidden">
+    <main className="min-h-screen relative flex items-center justify-center p-6 bg-background overflow-hidden font-sans">
       {/* Background Decorative Elements */}
       <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-accent-cyan/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-accent-purple/10 blur-[120px] rounded-full pointer-events-none" />
@@ -27,58 +67,45 @@ export default function LoginPage() {
               <Orbit className="w-7 h-7 text-black" />
             </div>
             <h1 className="text-2xl font-black tracking-tighter gradient-text">HAPKONIC PRO</h1>
-            <p className="text-text-secondary text-sm font-light mt-1">Sign in to your premium dashboard</p>
+            <p className="text-text-secondary text-sm font-light mt-1 text-center">Sign in to your premium dashboard</p>
           </div>
 
-          <div className="space-y-4">
-            <Input label="Email Address" placeholder="name@company.com" />
-            <Input label="Password" type="password" placeholder="••••••••" />
+          {registered && (
+            <div className="mb-6 p-4 rounded-xl bg-accent-green/10 border border-accent-green/20 flex items-start gap-4 animate-in fade-in zoom-in duration-300">
+               <div className="text-accent-green text-[10px] uppercase font-black tracking-widest leading-none mt-1">SUCCESS</div>
+               <p className="text-xs text-text-secondary font-medium uppercase tracking-tight">Account created! You can now sign in.</p>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Input 
+              label="Email Address" 
+              placeholder="name@company.com" 
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input 
+              label="Password" 
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
             
-            <Button className="w-full mt-2">Sign In with Email</Button>
-          </div>
+            {error && (
+              <div className="flex items-center gap-2 text-accent-pink">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase font-bold tracking-widest">{error}</span>
+              </div>
+            )}
 
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-glass-border"></div>
-            </div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-              <span className="bg-[#06060E] px-4 text-text-muted">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full border-glass-border hover:bg-white/5"
-                onClick={() => signIn("google")}
-            >
-              <Github className="w-4 h-4 mr-2" /> Google
+            <Button className="w-full mt-2" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In with Email"}
             </Button>
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full border-glass-border hover:bg-white/5"
-                onClick={() => signIn("facebook")}
-            >
-              <Facebook className="w-4 h-4 mr-2 text-blue-500" /> Facebook
-            </Button>
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full border-glass-border hover:bg-white/5"
-                onClick={() => signIn("twitter")}
-            >
-              <Twitter className="w-4 h-4 mr-2 text-cyan-400" /> Twitter
-            </Button>
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full border-glass-border hover:bg-white/5"
-            >
-              <Instagram className="w-4 h-4 mr-2 text-pink-500" /> Instagram
-            </Button>
-          </div>
+          </form>
 
           <p className="mt-8 text-center text-[10px] text-text-muted uppercase tracking-[1px]">
             New to Hapkonic? <Link href="/register" className="text-accent-cyan font-bold hover:underline">Request access</Link>
