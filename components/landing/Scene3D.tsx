@@ -33,8 +33,9 @@ const GlassObject = ({ geometry, position, color, rotationSpeed = 1 }: any) => {
   return (
     <group position={position}>
       <mesh ref={meshRef} geometry={geometry}>
-        <MeshPhysicalMaterial {...materialProps} />
+        <meshPhysicalMaterial {...materialProps} />
       </mesh>
+
       <mesh ref={wireframeRef} geometry={geometry} scale={1.1}>
         <meshBasicMaterial color={color} wireframe transparent opacity={0.1} />
       </mesh>
