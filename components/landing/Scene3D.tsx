@@ -2,8 +2,9 @@
 
 import React, { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { PerspectiveCamera, Float, MeshPhysicalMaterial } from "@react-three/drei";
+import { PerspectiveCamera, Float } from "@react-three/drei";
 import * as THREE from "three";
+
 
 const GlassObject = ({ geometry, position, color, rotationSpeed = 1 }: any) => {
   const meshRef = useRef<THREE.Mesh>(null!);
