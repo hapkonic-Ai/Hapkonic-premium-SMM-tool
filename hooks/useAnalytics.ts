@@ -72,3 +72,17 @@ export function useEngagementAnalytics() {
     }),
   });
 }
+
+export function useSentiment() {
+  const { dateRange, selectedPlatforms } = useFilterStore();
+  
+  return useQuery({
+    queryKey: ["analytics", "sentiment", dateRange, selectedPlatforms],
+    queryFn: () => fetchAnalytics("sentiment", {
+      from: format(dateRange.from, "yyyy-MM-dd"),
+      to: format(dateRange.to, "yyyy-MM-dd"),
+      platforms: selectedPlatforms,
+    }),
+  });
+}
+

@@ -31,6 +31,7 @@ export default function EngagementPage() {
           title="Comments"
           value="12.4K"
           change={-5.2}
+          label="vs last period"
           icon={<MessageCircle className="w-5 h-5 text-accent-cyan" />}
           isLoading={isLoading}
         />
@@ -38,6 +39,7 @@ export default function EngagementPage() {
           title="Shares"
           value="8.1K"
           change={18.4}
+          label="vs last period"
           icon={<Share2 className="w-5 h-5 text-accent-purple" />}
           isLoading={isLoading}
         />
@@ -45,6 +47,7 @@ export default function EngagementPage() {
           title="Saves"
           value="3.2K"
           change={2.1}
+          label="vs last period"
           icon={<Bookmark className="w-5 h-5 text-yellow-500" />}
           isLoading={isLoading}
         />
