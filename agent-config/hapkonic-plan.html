@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hapkonic — Premium Social Media & Analytics Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-dark: #06060e;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-hover: rgba(255, 255, 255, 0.1);
+  --accent-cyan: #00f0ff;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-orange: #f97316;
+  --accent-green: #10b981;
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(240, 240, 245, 0.6);
+  --text-muted: rgba(240, 240, 245, 0.35);
+  --gradient-main: linear-gradient(135deg, #00f0ff, #a855f7, #ec4899);
+  --gradient-subtle: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(168,85,247,0.15));
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-display);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.4); border-radius: 3px; }
+
+/* ===== THREE.JS CANVAS ===== */
+#three-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== NOISE OVERLAY ===== */
+.noise-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ===== CONTENT WRAPPER ===== */
+.content-wrapper {
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== NAV ===== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  background: rgba(6, 6, 14, 0.7);
+  border-bottom: 1px solid var(--glass-border);
+  transition: all 0.3s;
+}
+
+.nav-logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: color 0.3s;
+  text-transform: uppercase;
+}
+
+.nav-links a:hover { color: var(--accent-cyan); }
+
+.nav-cta {
+  padding: 0.5rem 1.5rem !important;
+  background: var(--gradient-main) !important;
+  border-radius: 50px !important;
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+  font-weight: 700 !important;
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -3px;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards;
+}
+
+.hero h1 .gradient-text {
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: var(--text-secondary);
+  max-width: 600px;
+  font-weight: 300;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+
+.btn-primary {
+  padding: 0.9rem 2.5rem;
+  background: var(--gradient-main);
+  border: none;
+  border-radius: 50px;
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: var(--font-display);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 240, 255, 0.3);
+}
+
+.btn-secondary {
+  padding: 0.9rem 2.5rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: var(--font-display);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: var(--glass-hover);
+  border-color: var(--accent-cyan);
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 1.2s forwards;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--accent-cyan), transparent);
+  animation: scrollPulse 2s infinite;
+}
+
+/* ===== SECTION STYLES ===== */
+section {
+  padding: 6rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.section-desc {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+
+/* ===== GLASS CARD ===== */
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+.glass-card:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 4rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.stat-number {
+  font-size: 3rem;
+  font-weight: 900;
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+/* ===== PHASE TIMELINE ===== */
+.phase-timeline {
+  position: relative;
+  padding-left: 3rem;
+}
+
+.phase-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-purple), var(--accent-pink), var(--accent-orange), var(--accent-green));
+}
+
+.phase-block {
+  margin-bottom: 4rem;
+  position: relative;
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.phase-block.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.phase-dot {
+  position: absolute;
+  left: -3rem;
+  top: 0.5rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translateX(-7px);
+}
+
+.phase-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid;
+  opacity: 0.3;
+  animation: pulse 2s infinite;
+}
+
+.phase-number {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.phase-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.phase-duration {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 1rem;
+}
+
+.phase-desc {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+  max-width: 700px;
+}
+
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.task-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  backdrop-filter: blur(15px);
+  transition: all 0.3s;
+}
+
+.task-card:hover {
+  background: var(--glass-hover);
+  transform: translateY(-2px);
+}
+
+.task-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.task-card p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.task-tag {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ===== DASHBOARD PREVIEW ===== */
+.dashboard-preview {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  backdrop-filter: blur(20px);
+  margin: 3rem 0;
+  overflow: hidden;
+}
+
+.dash-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 1.5rem;
+}
+
+.dash-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dash-dots {
+  display: flex; gap: 6px;
+}
+
+.dash-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.dash-tab {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.dash-tab.active {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: 1rem;
+}
+
+.dash-widget {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-widget.span-2 { grid-column: span 2; }
+.dash-widget.span-3 { grid-column: span 3; }
+.dash-widget.span-4 { grid-column: span 4; }
+
+.widget-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+  margin-bottom: 0.5rem;
+}
+
+.widget-value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.widget-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.widget-change.positive { color: var(--accent-green); }
+.widget-change.negative { color: var(--accent-pink); }
+
+/* Mini chart bars */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+  margin-top: 1rem;
+}
+
+.mini-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Donut chart */
+.donut-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.donut-svg { width: 80px; height: 80px; }
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* Sparkline */
+.sparkline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.sparkline-row:last-child { border: none; }
+
+.sparkline-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.sparkline-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+/* ===== TABLE PREVIEW ===== */
+.table-preview {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.glass-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8rem;
+}
+
+.glass-table thead th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--glass-border);
+  font-weight: 400;
+}
+
+.glass-table tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+}
+
+.glass-table tbody tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
+
+.status-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.status-badge.active { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+.status-badge.pending { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
+.status-badge.planned { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+
+/* ===== FEATURE GRID ===== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0,240,255,0.05) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.feature-card:hover::after { opacity: 1; }
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 240, 255, 0.2);
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* ===== PRICING / CTA ===== */
+.cta-section {
+  text-align: center;
+  padding: 8rem 2rem;
+  position: relative;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  border-top: 1px solid var(--glass-border);
+  padding: 3rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--accent-cyan); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes scrollPulse {
+  0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  50% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0); transform-origin: bottom; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+.delay-6 { transition-delay: 0.6s; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-widget.span-3 { grid-column: span 2; }
+  .dash-widget.span-4 { grid-column: span 2; }
+  .nav-links a:not(.nav-cta) { display: none; }
+}
+
+@media (max-width: 600px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-widget.span-2, .dash-widget.span-3, .dash-widget.span-4 { grid-column: span 1; }
+  .phase-timeline { padding-left: 2rem; }
+  .phase-dot { left: -2rem; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Phase accent colors */
+.phase-1 .phase-number, .phase-1 .phase-dot { color: var(--accent-cyan); background: var(--accent-cyan); }
+.phase-1 .phase-dot::after { border-color: var(--accent-cyan); }
+.phase-2 .phase-number { color: var(--accent-purple); }
+.phase-2 .phase-dot { background: var(--accent-purple); }
+.phase-2 .phase-dot::after { border-color: var(--accent-purple); }
+.phase-3 .phase-number { color: var(--accent-pink); }
+.phase-3 .phase-dot { background: var(--accent-pink); }
+.phase-3 .phase-dot::after { border-color: var(--accent-pink); }
+.phase-4 .phase-number { color: var(--accent-orange); }
+.phase-4 .phase-dot { background: var(--accent-orange); }
+.phase-4 .phase-dot::after { border-color: var(--accent-orange); }
+.phase-5 .phase-number { color: var(--accent-green); }
+.phase-5 .phase-dot { background: var(--accent-green); }
+.phase-5 .phase-dot::after { border-color: var(--accent-green); }
+
+/* Glow orbs */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -1;
+}
+</style>
+</head>
+<body>
+
+<canvas id="three-canvas"></canvas>
+<div class="noise-overlay"></div>
+
+<div class="content-wrapper">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">HAPKONIC</div>
+    <div class="nav-links">
+      <a href="#phases">Phases</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#features">Features</a>
+      <a href="#strategy">Strategy</a>
+      <a href="#" class="nav-cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">◆ PREMIUM SOCIAL INTELLIGENCE</div>
+    <h1>
+      <span class="gradient-text">Analytics</span> That<br>
+      Drive <span class="gradient-text">Growth</span>
+    </h1>
+    <p class="hero-sub">
+      Hapkonic's enterprise-grade social media analytics platform — powered by AI inference, real-time monitoring, and strategic automation for modern brands.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('phases').scrollIntoView({behavior:'smooth'})">View Implementation Plan</button>
+      <button class="btn-secondary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">Preview Dashboard</button>
+    </div>
+    <div class="hero-scroll-indicator">
+      <span style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;">Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+    <div class="stats-bar scroll-reveal">
+      <div class="stat-item">
+        <div class="stat-number" data-count="15">0</div>
+        <div class="stat-label">Dashboard Modules</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="5">0</div>
+        <div class="stat-label">Build Phases</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="50">0</div>
+        <div class="stat-label">Analytics Metrics</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="14">0</div>
+        <div class="stat-label">Platform Integrations</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE IMPLEMENTATION -->
+  <section id="phases">
+    <div class="scroll-reveal">
+      <div class="section-label">// Implementation Roadmap</div>
+      <div class="section-title">Multi-Phase<br>Build Plan</div>
+      <div class="section-desc">A structured 5-phase approach to building Hapkonic's complete social media analytics ecosystem — from foundation to AI intelligence.</div>
+    </div>
+
+    <div class="phase-timeline">
+
+      <!-- PHASE 1 -->
+      <div class="phase-block phase-1">
+        <div class="phase-dot"></div>
+        <div class="phase-number">Phase 01</div>
+        <div class="phase-title">Foundation & Core UI</div>
+        <div class="phase-duration">Weeks 1–4 · Design System + Landing Page + Auth</div>
+        <div class="phase-desc">Establish the glassmorphic design system, 3D-enhanced landing page with scroll animations, authentication flows, and the base dashboard shell with responsive layout.</div>
+        <div class="phase-grid">
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">◎</div>
+            <h4>Design System & Tokens</h4>
+            <p>Glassmorphic component library — glass cards, frosted panels, gradient borders, depth layers, and CSS custom properties for theming.</p>
+            <div class="task-tags"><span class="task-tag">Figma</span><span class="task-tag">CSS Variables</span><span class="task-tag">Storybook</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">▲</div>
+            <h4>3D Landing Page</h4>
+            <p>Three.js scene with floating geometric objects, GSAP scroll-triggered animations, parallax layers, and interactive 3D data visualizations on hero.</p>
+            <div class="task-tags"><span class="task-tag">Three.js</span><span class="task-tag">GSAP</span><span class="task-tag">WebGL</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">⬡</div>
+            <h4>Auth & Onboarding</h4>
+            <p>OAuth integration for social platforms, multi-step onboarding wizard with brand setup, team invites, and connected account management.</p>
+            <div class="task-tags"><span class="task-tag">NextAuth</span><span class="task-tag">OAuth 2.0</span><span class="task-tag">JWT</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">◧</div>
+            <h4>Dashboard Shell</h4>
+            <p>Responsive sidebar nav, glass-panel layouts, widget grid system, dark/light themes, and real-time notification center infrastructure.</p>
+            <div class="task-tags"><span class="task-tag">Next.js 14</span><span class="task-tag">Tailwind</span><span class="task-tag">Framer Motion</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase-block phase-2">
+        <div class="phase-dot"></div>
+        <div class="phase-number">Phase 02</div>
+        <div class="phase-title">Analytics Engine & Data Layer</div>
+        <div class="phase-duration">Weeks 5–10 · API Integrations + Core Dashboards</div>
+        <div class="phase-desc">Build the data pipeline connecting all social platforms, implement the Account Overview, Content Performance, Audience Analytics, and Engagement dashboards with real-time chart rendering.</div>
+        <div class="phase-grid">
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">⟐</div>
+            <h4>Multi-Platform API Layer</h4>
+            <p>Unified data ingestion from Instagram, Facebook, LinkedIn, YouTube, X, TikTok — normalized schema, rate limiting, webhook listeners, and caching layer.</p>
+            <div class="task-tags"><span class="task-tag">REST APIs</span><span class="task-tag">GraphQL</span><span class="task-tag">Redis</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">📊</div>
+            <h4>Account Overview Dashboard</h4>
+            <p>KPI cards with sparklines, platform comparison charts, follower growth timelines, engagement rate gauges, and campaign summary widgets.</p>
+            <div class="task-tags"><span class="task-tag">Recharts</span><span class="task-tag">D3.js</span><span class="task-tag">WebSocket</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">📈</div>
+            <h4>Content Performance Module</h4>
+            <p>Post-level analytics with reach, impressions, CTR. Top/worst performer rankings, content type comparison (Reels vs Carousels vs Shorts), hashtag performance heat maps.</p>
+            <div class="task-tags"><span class="task-tag">Data Grid</span><span class="task-tag">Heatmap</span><span class="task-tag">Filters</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">👥</div>
+            <h4>Audience & Engagement Analytics</h4>
+            <p>Demographics breakdown (age, gender, location, device), audience interest clusters, active hours heatmap, engagement by segment, and trend analysis.</p>
+            <div class="task-tags"><span class="task-tag">Geo Maps</span><span class="task-tag">Clustering</span><span class="task-tag">Segments</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase-block phase-3">
+        <div class="phase-dot"></div>
+        <div class="phase-number">Phase 03</div>
+        <div class="phase-title">Intelligence & Competitive Layer</div>
+        <div class="phase-duration">Weeks 11–16 · AI Insights + Sentiment + Competitor</div>
+        <div class="phase-desc">Deploy the AI inference engine for predictive analytics, implement sentiment analysis on brand mentions, and build the competitor benchmarking suite with share-of-voice tracking.</div>
+        <div class="phase-grid">
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">🧠</div>
+            <h4>AI Insights Engine</h4>
+            <p>ML-powered best posting time predictor, virality probability scorer, content theme recommender, audience churn prediction, and trend detection pipeline.</p>
+            <div class="task-tags"><span class="task-tag">Python ML</span><span class="task-tag">TensorFlow</span><span class="task-tag">LLM API</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">💬</div>
+            <h4>Sentiment Analysis</h4>
+            <p>NLP-driven comment and mention analysis — positive/neutral/negative scoring, brand perception tracking, crisis detection alerts, and customer satisfaction signals.</p>
+            <div class="task-tags"><span class="task-tag">NLP</span><span class="task-tag">BERT</span><span class="task-tag">Real-time</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">⚔️</div>
+            <h4>Competitor Analytics</h4>
+            <p>Track competitor follower growth, engagement rates, top posts, share of voice, and content gap analysis — all rendered in comparative glass-panel charts.</p>
+            <div class="task-tags"><span class="task-tag">Benchmarking</span><span class="task-tag">SOV</span><span class="task-tag">Gap Analysis</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">🔔</div>
+            <h4>Alerts & Monitoring</h4>
+            <p>Real-time alert system — viral post detection, sudden follower drops, negative sentiment spikes, competitor campaign launches, brand mention monitoring.</p>
+            <div class="task-tags"><span class="task-tag">WebSocket</span><span class="task-tag">Push Notify</span><span class="task-tag">Thresholds</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase-block phase-4">
+        <div class="phase-dot"></div>
+        <div class="phase-number">Phase 04</div>
+        <div class="phase-title">Campaign & Revenue Module</div>
+        <div class="phase-duration">Weeks 17–22 · Campaigns + Influencer + Conversions</div>
+        <div class="phase-desc">Build campaign performance tracking with ROI analysis, influencer collaboration analytics with authenticity scoring, and conversion/revenue tracking integrated with Google Analytics and e-commerce.</div>
+        <div class="phase-grid">
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">🎯</div>
+            <h4>Campaign Performance Hub</h4>
+            <p>Campaign-level reach, engagement, hashtag tracking, influencer contribution metrics, ROI calculator, cost-per-engagement, and cost-per-lead dashboards.</p>
+            <div class="task-tags"><span class="task-tag">ROI Tracking</span><span class="task-tag">Attribution</span><span class="task-tag">UTMs</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">🤝</div>
+            <h4>Influencer Analytics</h4>
+            <p>Influencer reach, engagement generated, audience overlap detection, authentic engagement scoring, fake follower detection, and collaboration ROI tracking.</p>
+            <div class="task-tags"><span class="task-tag">Scoring</span><span class="task-tag">Detection</span><span class="task-tag">Match AI</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">💰</div>
+            <h4>Conversion & Revenue</h4>
+            <p>Link click tracking, landing page conversion rates, leads generated, revenue from social traffic, CPA — integrated with Google Analytics & Shopify.</p>
+            <div class="task-tags"><span class="task-tag">GA4</span><span class="task-tag">Shopify</span><span class="task-tag">Pixel</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">🏆</div>
+            <h4>Brand Health Score</h4>
+            <p>Composite score from engagement, sentiment, growth, share of voice, and content performance — rendered as an animated radial gauge with trend line.</p>
+            <div class="task-tags"><span class="task-tag">Composite</span><span class="task-tag">Radial Chart</span><span class="task-tag">Scoring</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 5 -->
+      <div class="phase-block phase-5">
+        <div class="phase-dot"></div>
+        <div class="phase-number">Phase 05</div>
+        <div class="phase-title">Automation & Enterprise Scale</div>
+        <div class="phase-duration">Weeks 23–30 · Scheduling + Reporting + White-Label</div>
+        <div class="phase-desc">Complete the platform with post scheduling, AI caption generation, automated reporting, client white-label dashboards, and team collaboration features for agencies.</div>
+        <div class="phase-grid">
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">📅</div>
+            <h4>Scheduling & Automation</h4>
+            <p>Visual calendar scheduler, bulk publishing, AI-powered caption generation, hashtag suggestions, comment auto-replies, and unified inbox management.</p>
+            <div class="task-tags"><span class="task-tag">Calendar</span><span class="task-tag">AI Gen</span><span class="task-tag">Queue</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">📄</div>
+            <h4>Custom Reporting</h4>
+            <p>Automated PDF/PowerPoint report generation, weekly/monthly email reports, drag-and-drop report builder, CSV export, and branded client dashboards.</p>
+            <div class="task-tags"><span class="task-tag">PDF Gen</span><span class="task-tag">PPTX</span><span class="task-tag">Templates</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">🏢</div>
+            <h4>Enterprise & White-Label</h4>
+            <p>Multi-tenant architecture, client workspace isolation, custom branding, role-based access control, SSO integration, and API access for third-party tools.</p>
+            <div class="task-tags"><span class="task-tag">Multi-tenant</span><span class="task-tag">RBAC</span><span class="task-tag">SSO</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">🔗</div>
+            <h4>Integration Marketplace</h4>
+            <p>Plugin architecture for third-party integrations — CRM, email marketing, ad platforms, Slack, Zapier webhooks, and custom API endpoints.</p>
+            <div class="task-tags"><span class="task-tag">Webhooks</span><span class="task-tag">Zapier</span><span class="task-tag">SDK</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DASHBOARD PREVIEW -->
+  <section id="dashboard">
+    <div class="scroll-reveal">
+      <div class="section-label">// UI Preview</div>
+      <div class="section-title">Dashboard<br>Blueprint</div>
+      <div class="section-desc">A preview of the glassmorphic analytics dashboard — featuring live KPIs, interactive charts, audience breakdowns, and real-time data tables.</div>
+    </div>
+
+    <div class="dashboard-preview scroll-reveal delay-2">
+      <div class="dash-topbar">
+        <div class="dash-topbar-left">
+          <div class="dash-dots">
+            <div class="dash-dot" style="background:#ff5f57;"></div>
+            <div class="dash-dot" style="background:#febc2e;"></div>
+            <div class="dash-dot" style="background:#28c840;"></div>
+          </div>
+          <span class="dash-tab active">Overview</span>
+          <span class="dash-tab">Content</span>
+          <span class="dash-tab">Audience</span>
+          <span class="dash-tab">Campaigns</span>
+          <span class="dash-tab">AI Insights</span>
+        </div>
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted);">Last updated: 2 min ago</span>
+      </div>
+
+      <div class="dash-grid">
+        <!-- KPI Cards -->
+        <div class="dash-widget">
+          <div class="widget-label">Total Followers</div>
+          <div class="widget-value">2.4M</div>
+          <div class="widget-change positive">▲ +12.3% this month</div>
+        </div>
+        <div class="dash-widget">
+          <div class="widget-label">Engagement Rate</div>
+          <div class="widget-value">4.7%</div>
+          <div class="widget-change positive">▲ +0.8% vs avg</div>
+        </div>
+        <div class="dash-widget">
+          <div class="widget-label">Total Reach</div>
+          <div class="widget-value">18.2M</div>
+          <div class="widget-change positive">▲ +23.1%</div>
+        </div>
+        <div class="dash-widget">
+          <div class="widget-label">Conversions</div>
+          <div class="widget-value">8,431</div>
+          <div class="widget-change negative">▼ -2.1%</div>
+        </div>
+
+        <!-- Chart Area -->
+        <div class="dash-widget span-3">
+          <div class="widget-label">Engagement Over Time — Weekly</div>
+          <div class="mini-chart" id="main-chart"></div>
+        </div>
+
+        <!-- Sentiment Donut -->
+        <div class="dash-widget">
+          <div class="widget-label">Sentiment Analysis</div>
+          <div class="donut-container">
+            <svg class="donut-svg" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="62 38" stroke-dashoffset="25" stroke-linecap="round"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="26 74" stroke-dashoffset="63" stroke-linecap="round"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#ec4899" stroke-width="3" stroke-dasharray="12 88" stroke-dashoffset="37" stroke-linecap="round"/>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Positive 62%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Neutral 26%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>Negative 12%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform Breakdown -->
+        <div class="dash-widget span-2">
+          <div class="widget-label">Platform Performance</div>
+          <div class="sparkline-row">
+            <span class="sparkline-label">📷 Instagram</span>
+            <span class="sparkline-val" style="color: var(--accent-cyan);">1.2M reach</span>
+          </div>
+          <div class="sparkline-row">
+            <span class="sparkline-label">📺 YouTube</span>
+            <span class="sparkline-val" style="color: var(--accent-purple);">890K views</span>
+          </div>
+          <div class="sparkline-row">
+            <span class="sparkline-label">💼 LinkedIn</span>
+            <span class="sparkline-val" style="color: var(--accent-green);">340K impressions</span>
+          </div>
+          <div class="sparkline-row">
+            <span class="sparkline-label">🎵 TikTok</span>
+            <span class="sparkline-val" style="color: var(--accent-pink);">2.1M plays</span>
+          </div>
+          <div class="sparkline-row">
+            <span class="sparkline-label">🐦 X (Twitter)</span>
+            <span class="sparkline-val" style="color: var(--accent-orange);">560K impressions</span>
+          </div>
+        </div>
+
+        <!-- Top Content Table -->
+        <div class="dash-widget span-2">
+          <div class="widget-label">Top Performing Content</div>
+          <div class="table-preview">
+            <table class="glass-table">
+              <thead>
+                <tr><th>Post</th><th>Type</th><th>Reach</th><th>Eng. Rate</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Product Launch Reel</td><td><span class="status-badge active">Reel</span></td><td>2.4M</td><td>8.2%</td></tr>
+                <tr><td>Behind the Scenes</td><td><span class="status-badge pending">Carousel</span></td><td>1.1M</td><td>6.1%</td></tr>
+                <tr><td>Team Culture Story</td><td><span class="status-badge planned">Story</span></td><td>890K</td><td>5.4%</td></tr>
+                <tr><td>Tutorial Short</td><td><span class="status-badge active">Short</span></td><td>780K</td><td>4.9%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="scroll-reveal">
+      <div class="section-label">// Platform Capabilities</div>
+      <div class="section-title">15 Core<br>Modules</div>
+      <div class="section-desc">Every module maps to a professional-grade analytics capability — built with glassmorphic UI, real-time data, and AI-powered insights.</div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card scroll-reveal delay-1">
+        <div class="feature-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">📊</div>
+        <h3>Account Overview</h3>
+        <p>Cross-platform summary with follower growth, reach, engagement rate, profile visits, and KPI vs target tracking in a unified dashboard.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-2">
+        <div class="feature-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">📈</div>
+        <h3>Content Performance</h3>
+        <p>Post-level analytics, format comparisons, hashtag heat maps, timing analysis, and AI-ranked top/worst performers.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-3">
+        <div class="feature-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">👥</div>
+        <h3>Audience Analytics</h3>
+        <p>Demographics, interests, device usage, active hours, growth source attribution, and loyal vs casual viewer segmentation.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-1">
+        <div class="feature-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">💬</div>
+        <h3>Engagement Analytics</h3>
+        <p>Comment, share, save, and conversation rates with segment-level breakdowns, trend analysis, and story interaction tracking.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-2">
+        <div class="feature-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">⚔️</div>
+        <h3>Competitor Analytics</h3>
+        <p>Follower growth benchmarking, engagement comparisons, top competitor posts, share of voice, and content gap analysis.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-3">
+        <div class="feature-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">🧠</div>
+        <h3>Sentiment Analysis</h3>
+        <p>NLP-powered positive/neutral/negative scoring on all mentions, crisis detection, product feedback loops, and brand perception dashboards.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-1">
+        <div class="feature-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">🎯</div>
+        <h3>Campaign Tracking</h3>
+        <p>Campaign-level metrics with ROI, cost-per-engagement, cost-per-lead, hashtag performance, and influencer contribution attribution.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-2">
+        <div class="feature-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">🤝</div>
+        <h3>Influencer Analytics</h3>
+        <p>Reach, audience overlap, authenticity scoring, fake follower detection, and engagement quality metrics for collaborations.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-3">
+        <div class="feature-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">💰</div>
+        <h3>Revenue Tracking</h3>
+        <p>Link clicks, landing page conversions, leads generated, social traffic revenue — integrated with GA4 and Shopify.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-1">
+        <div class="feature-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">📅</div>
+        <h3>Scheduling & Automation</h3>
+        <p>Visual calendar, bulk publish, AI captions, smart hashtags, auto-replies, and unified inbox across all platforms.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-2">
+        <div class="feature-icon" style="background: rgba(0,240,255,0.1); color: var(--accent-cyan);">🔔</div>
+        <h3>Alerts & Monitoring</h3>
+        <p>Real-time alerts for viral posts, follower drops, sentiment spikes, competitor launches, and brand mentions.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-3">
+        <div class="feature-icon" style="background: rgba(168,85,247,0.1); color: var(--accent-purple);">✨</div>
+        <h3>AI Inference Layer</h3>
+        <p>Predictive analytics — virality scoring, audience churn prediction, optimal timing, trend detection, and influencer recommendations.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-1">
+        <div class="feature-icon" style="background: rgba(236,72,153,0.1); color: var(--accent-pink);">📄</div>
+        <h3>Custom Reporting</h3>
+        <p>Automated PDF/PPTX reports, email scheduling, drag-and-drop builder, CSV exports, and branded client dashboards.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-2">
+        <div class="feature-icon" style="background: rgba(249,115,22,0.1); color: var(--accent-orange);">🔗</div>
+        <h3>Multi-Platform Hub</h3>
+        <p>Unified integration with Instagram, Facebook, LinkedIn, YouTube, X, TikTok — normalized data across all touchpoints.</p>
+      </div>
+      <div class="feature-card scroll-reveal delay-3">
+        <div class="feature-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-green);">🏆</div>
+        <h3>Brand Health Score</h3>
+        <p>Composite score from engagement, sentiment, growth, share of voice, and content performance — one number to rule them all.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRATEGY SECTION -->
+  <section id="strategy">
+    <div class="scroll-reveal">
+      <div class="section-label">// Business & Marketing Strategy</div>
+      <div class="section-title">Go-to-Market<br>Strategy</div>
+      <div class="section-desc">Hapkonic's positioning, revenue model, and marketing playbook for capturing the premium social analytics market.</div>
+    </div>
+
+    <div class="phase-grid" style="margin-bottom: 3rem;">
+      <div class="glass-card scroll-reveal delay-1">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">🎯</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Target Market</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">Mid-to-enterprise brands, marketing agencies, D2C brands scaling beyond 100K followers, and influencer management companies who need more than basic native analytics.</p>
+      </div>
+      <div class="glass-card scroll-reveal delay-2">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">💎</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Pricing Tiers</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">Starter ($49/mo — 3 profiles), Professional ($149/mo — 10 profiles + AI), Enterprise (custom — unlimited + white-label + API access + dedicated support).</p>
+      </div>
+      <div class="glass-card scroll-reveal delay-3">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">🚀</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Launch Strategy</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">Beta with 50 agency partners → Product Hunt launch → Content marketing flywheel → Agency partnership program → Enterprise sales team by Phase 4.</p>
+      </div>
+    </div>
+
+    <div class="phase-grid">
+      <div class="glass-card scroll-reveal delay-1">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">📣</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Marketing Channels</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">LinkedIn thought leadership, YouTube tutorials, SEO blog targeting "social media analytics" keywords, webinar series, and agency referral program with 20% recurring commission.</p>
+      </div>
+      <div class="glass-card scroll-reveal delay-2">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">🏅</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Competitive Edge</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">AI-first approach (predictive not just descriptive), superior glassmorphic UI vs competitors' dated interfaces, real-time alerts, and integrated business strategy recommendations.</p>
+      </div>
+      <div class="glass-card scroll-reveal delay-3">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">📐</div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; font-weight: 700;">Success Metrics</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">Year 1: 500 paying customers, $50K MRR. Year 2: 2,000 customers, 10 enterprise deals, $250K MRR. Year 3: Series A, international expansion, 10K+ users.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="scroll-reveal">
+      <div class="section-label" style="text-align: center;">// Ready to Build?</div>
+      <div class="section-title" style="text-align: center; margin-bottom: 1.5rem;">Let's Ship<br><span style="background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hapkonic</span></div>
+      <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2.5rem; font-weight: 300; text-align: center;">30 weeks from concept to a fully operational, AI-powered social media analytics platform that competes at the enterprise level.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn-primary">Start Phase 1 →</button>
+        <button class="btn-secondary">Download Full Plan</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-copy">© 2026 Hapkonic. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ===== THREE.JS 3D SCENE =====
+(function() {
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 30;
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0x222244, 0.5);
+  scene.add(ambientLight);
+
+  const pointLight1 = new THREE.PointLight(0x00f0ff, 2, 100);
+  pointLight1.position.set(10, 15, 20);
+  scene.add(pointLight1);
+
+  const pointLight2 = new THREE.PointLight(0xa855f7, 2, 100);
+  pointLight2.position.set(-15, -10, 15);
+  scene.add(pointLight2);
+
+  const pointLight3 = new THREE.PointLight(0xec4899, 1.5, 80);
+  pointLight3.position.set(5, -20, 10);
+  scene.add(pointLight3);
+
+  // Glass material
+  function glassMat(color) {
+    return new THREE.MeshPhysicalMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.15,
+      roughness: 0.1,
+      metalness: 0.3,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+      side: THREE.DoubleSide,
+    });
+  }
+
+  // Wireframe material
+  function wireMat(color) {
+    return new THREE.MeshBasicMaterial({
+      color: color,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.12,
+    });
+  }
+
+  const objects = [];
+
+  // Floating Icosahedron
+  const ico = new THREE.Mesh(new THREE.IcosahedronGeometry(3, 1), glassMat(0x00f0ff));
+  ico.position.set(-12, 8, -5);
+  scene.add(ico);
+  objects.push({ mesh: ico, rotSpeed: { x: 0.003, y: 0.005 }, floatSpeed: 0.8, floatAmp: 1.5, baseY: 8 });
+
+  // Wireframe Icosahedron (larger, around the glass one)
+  const icoWire = new THREE.Mesh(new THREE.IcosahedronGeometry(3.5, 1), wireMat(0x00f0ff));
+  icoWire.position.set(-12, 8, -5);
+  scene.add(icoWire);
+  objects.push({ mesh: icoWire, rotSpeed: { x: -0.002, y: -0.003 }, floatSpeed: 0.8, floatAmp: 1.5, baseY: 8 });
+
+  // Torus
+  const torus = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.6, 16, 40), glassMat(0xa855f7));
+  torus.position.set(14, -5, -8);
+  scene.add(torus);
+  objects.push({ mesh: torus, rotSpeed: { x: 0.004, y: 0.002 }, floatSpeed: 0.6, floatAmp: 2, baseY: -5 });
+
+  // Torus wireframe
+  const torusWire = new THREE.Mesh(new THREE.TorusGeometry(3, 0.3, 12, 30), wireMat(0xa855f7));
+  torusWire.position.set(14, -5, -8);
+  scene.add(torusWire);
+  objects.push({ mesh: torusWire, rotSpeed: { x: -0.003, y: 0.004 }, floatSpeed: 0.6, floatAmp: 2, baseY: -5 });
+
+  // Octahedron
+  const octa = new THREE.Mesh(new THREE.OctahedronGeometry(2, 0), glassMat(0xec4899));
+  octa.position.set(-8, -12, -3);
+  scene.add(octa);
+  objects.push({ mesh: octa, rotSpeed: { x: 0.005, y: 0.003 }, floatSpeed: 1, floatAmp: 1.2, baseY: -12 });
+
+  // Dodecahedron
+  const dodeca = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), glassMat(0xf97316));
+  dodeca.position.set(10, 12, -6);
+  scene.add(dodeca);
+  objects.push({ mesh: dodeca, rotSpeed: { x: 0.002, y: 0.004 }, floatSpeed: 0.7, floatAmp: 1.8, baseY: 12 });
+
+  // Dodecahedron wireframe
+  const dodecaWire = new THREE.Mesh(new THREE.DodecahedronGeometry(2.5, 0), wireMat(0xf97316));
+  dodecaWire.position.set(10, 12, -6);
+  scene.add(dodecaWire);
+  objects.push({ mesh: dodecaWire, rotSpeed: { x: -0.003, y: -0.002 }, floatSpeed: 0.7, floatAmp: 1.8, baseY: 12 });
+
+  // Torus Knot
+  const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.8, 0.5, 80, 16), glassMat(0x10b981));
+  knot.position.set(-15, -2, -10);
+  scene.add(knot);
+  objects.push({ mesh: knot, rotSpeed: { x: 0.003, y: 0.002 }, floatSpeed: 0.5, floatAmp: 2.5, baseY: -2 });
+
+  // Sphere cluster (small)
+  for (let i = 0; i < 8; i++) {
+    const r = 0.3 + Math.random() * 0.5;
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(r, 16, 16),
+      glassMat([0x00f0ff, 0xa855f7, 0xec4899, 0xf97316, 0x10b981][Math.floor(Math.random() * 5)])
+    );
+    const x = (Math.random() - 0.5) * 40;
+    const y = (Math.random() - 0.5) * 30;
+    const z = -5 - Math.random() * 15;
+    sphere.position.set(x, y, z);
+    scene.add(sphere);
+    objects.push({
+      mesh: sphere,
+      rotSpeed: { x: 0.001, y: 0.001 },
+      floatSpeed: 0.3 + Math.random() * 0.7,
+      floatAmp: 0.5 + Math.random() * 1,
+      baseY: y
+    });
+  }
+
+  // Ring
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(4, 0.15, 8, 60), wireMat(0x00f0ff));
+  ring.position.set(0, 0, -12);
+  ring.rotation.x = Math.PI * 0.4;
+  scene.add(ring);
+  objects.push({ mesh: ring, rotSpeed: { x: 0, y: 0.002 }, floatSpeed: 0.3, floatAmp: 0.5, baseY: 0 });
+
+  // Second ring
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(5, 0.1, 8, 80), wireMat(0xa855f7));
+  ring2.position.set(0, 0, -14);
+  ring2.rotation.x = Math.PI * 0.6;
+  ring2.rotation.z = Math.PI * 0.2;
+  scene.add(ring2);
+  objects.push({ mesh: ring2, rotSpeed: { x: 0, y: -0.001 }, floatSpeed: 0.2, floatAmp: 0.3, baseY: 0 });
+
+  // Cone
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(1.5, 3, 6), glassMat(0x00f0ff));
+  cone.position.set(18, 3, -7);
+  scene.add(cone);
+  objects.push({ mesh: cone, rotSpeed: { x: 0.002, y: 0.004 }, floatSpeed: 0.9, floatAmp: 1.3, baseY: 3 });
+
+  // Tetrahedron
+  const tetra = new THREE.Mesh(new THREE.TetrahedronGeometry(2, 0), glassMat(0xec4899));
+  tetra.position.set(-18, 5, -4);
+  scene.add(tetra);
+  objects.push({ mesh: tetra, rotSpeed: { x: 0.004, y: 0.003 }, floatSpeed: 0.65, floatAmp: 1.7, baseY: 5 });
+
+  // Cylinder
+  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 4, 8), glassMat(0xa855f7));
+  cyl.position.set(6, -15, -6);
+  scene.add(cyl);
+  objects.push({ mesh: cyl, rotSpeed: { x: 0.003, y: 0.005 }, floatSpeed: 0.55, floatAmp: 1.4, baseY: -15 });
+
+  // Mouse tracking
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  // Scroll offset
+  let scrollY = 0;
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+  // Resize
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // Animate
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = performance.now() * 0.001;
+
+    objects.forEach(obj => {
+      obj.mesh.rotation.x += obj.rotSpeed.x;
+      obj.mesh.rotation.y += obj.rotSpeed.y;
+      obj.mesh.position.y = obj.baseY + Math.sin(t * obj.floatSpeed) * obj.floatAmp;
+    });
+
+    // Camera follows mouse gently
+    camera.position.x += (mouseX * 3 - camera.position.x) * 0.02;
+    camera.position.y += (-mouseY * 2 - scrollY * 0.005 - camera.position.y) * 0.02;
+    camera.lookAt(0, -scrollY * 0.003, 0);
+
+    // Lights orbit
+    pointLight1.position.x = Math.sin(t * 0.3) * 15;
+    pointLight1.position.y = Math.cos(t * 0.2) * 10;
+    pointLight2.position.x = Math.cos(t * 0.4) * 12;
+    pointLight2.position.z = Math.sin(t * 0.3) * 15;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+// ===== SCROLL REVEAL =====
+const revealElements = document.querySelectorAll('.scroll-reveal, .phase-block');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+revealElements.forEach(el => revealObserver.observe(el));
+
+// ===== COUNTER ANIMATION =====
+const counters = document.querySelectorAll('.stat-number[data-count]');
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.count);
+      let current = 0;
+      const step = Math.max(1, Math.floor(target / 40));
+      const interval = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(interval);
+        }
+        el.textContent = current + '+';
+      }, 30);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+counters.forEach(c => counterObserver.observe(c));
+
+// ===== MINI CHART BARS =====
+const chartContainer = document.getElementById('main-chart');
+const barData = [35, 52, 45, 68, 42, 75, 58, 82, 65, 90, 72, 88, 95, 78, 85, 92, 70, 80, 88, 95, 82, 90, 75, 85];
+const colors = ['#00f0ff', '#00d4e0', '#00b8c2', '#a855f7', '#9333ea', '#00f0ff', '#00d4e0', '#a855f7', '#ec4899', '#00f0ff', '#10b981', '#a855f7', '#00f0ff', '#ec4899', '#f97316', '#10b981', '#00f0ff', '#a855f7', '#ec4899', '#00f0ff', '#10b981', '#a855f7', '#f97316', '#00f0ff'];
+
+barData.forEach((val, i) => {
+  const bar = document.createElement('div');
+  bar.className = 'mini-bar';
+  bar.style.height = '0%';
+  bar.style.background = colors[i % colors.length];
+  bar.style.opacity = '0.7';
+  bar.style.transitionDelay = (i * 0.03) + 's';
+  chartContainer.appendChild(bar);
+  setTimeout(() => { bar.style.height = val + '%'; }, 500);
+});
+
+// ===== NAV SHRINK ON SCROLL =====
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('.nav');
+  if (window.scrollY > 100) {
+    nav.style.padding = '0.6rem 2rem';
+  } else {
+    nav.style.padding = '1rem 2rem';
+  }
+});
+</script>
+
+</body>
+</html>

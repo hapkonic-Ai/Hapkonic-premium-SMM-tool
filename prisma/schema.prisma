@@ -1,0 +1,250 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  role          String    @default("USER")
+  orgId         String?
+  organization  Organization? @relation(fields: [orgId], references: [id])
+  accounts      SocialAccount[]
+  alerts        Alert[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  industry    String?
+  logo        String?
+  plan        String   @default("FREE")
+  settings    Json?
+  users       User[]
+  accounts    SocialAccount[]
+  campaigns   Campaign[]
+  competitors Competitor[]
+  reports     Report[]
+  influencers Influencer[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SocialAccount {
+  id            String   @id @default(cuid())
+  platform      Platform
+  username      String
+  accessToken   String
+  refreshToken  String?
+  profileUrl    String?
+  followerCount Int      @default(0)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  orgId         String
+  organization  Organization @relation(fields: [orgId], references: [id])
+  posts         Post[]
+  snapshots     AudienceSnapshot[]
+  sentiments    SentimentRecord[]
+  scheduledPosts ScheduledPost[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Platform {
+  INSTAGRAM
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  YOUTUBE
+  TIKTOK
+}
+
+model Post {
+  id              String   @id @default(cuid())
+  platformPostId  String
+  content         String?
+  mediaType       MediaType
+  mediaUrl        String?
+  publishedAt     DateTime
+  accountId       String
+  account         SocialAccount @relation(fields: [accountId], references: [id])
+  metrics         PostMetric[]
+  campaigns       CampaignPost[]
+  createdAt       DateTime @default(now())
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  CAROUSEL
+  TEXT
+}
+
+model PostMetric {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  date        DateTime @default(now())
+  reach       Int      @default(0)
+  impressions Int      @default(0)
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  shares      Int      @default(0)
+  saves       Int      @default(0)
+  clicks      Int      @default(0)
+  videoViews  Int      @default(0)
+  watchTime   Int      @default(0)
+}
+
+model AudienceSnapshot {
+  id              String   @id @default(cuid())
+  accountId       String
+  account         SocialAccount @relation(fields: [accountId], references: [id])
+  date            DateTime @default(now())
+  totalFollowers  Int
+  demographics    Json?
+  topCountries    Json?
+  topCities       Json?
+  ageGroups       Json?
+  genderSplit     Json?
+  activeHours     Json?
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  budget      Float?
+  status      CampaignStatus @default(PLANNED)
+  orgId       String
+  organization Organization @relation(fields: [orgId], references: [id])
+  posts       CampaignPost[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum CampaignStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model CampaignPost {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id])
+}
+
+model Competitor {
+  id            String   @id @default(cuid())
+  orgId         String
+  organization  Organization @relation(fields: [orgId], references: [id])
+  platform      Platform
+  username      String
+  followerCount Int      @default(0)
+  engagementRate Float   @default(0)
+  snapshots     CompetitorSnapshot[]
+  createdAt     DateTime @default(now())
+}
+
+model CompetitorSnapshot {
+  id            String   @id @default(cuid())
+  competitorId  String
+  competitor    Competitor @relation(fields: [competitorId], references: [id])
+  date          DateTime @default(now())
+  followers     Int
+  engagementRate Float
+  postCount     Int
+}
+
+model SentimentRecord {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     SocialAccount @relation(fields: [accountId], references: [id])
+  text        String
+  source      String?
+  sentiment   SentimentType
+  score       Float
+  date        DateTime @default(now())
+}
+
+enum SentimentType {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  severity  AlertSeverity
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model ScheduledPost {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     SocialAccount @relation(fields: [accountId], references: [id])
+  content     String?
+  mediaUrl    String?
+  scheduledAt DateTime
+  status      PostStatus @default(DRAFT)
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+model Report {
+  id            String   @id @default(cuid())
+  orgId         String
+  organization  Organization @relation(fields: [orgId], references: [id])
+  name          String
+  type          String
+  config        Json?
+  schedule      String?
+  lastGenerated DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model Influencer {
+  id              String   @id @default(cuid())
+  orgId           String
+  organization    Organization @relation(fields: [orgId], references: [id])
+  platform        Platform
+  username        String
+  followers       Int      @default(0)
+  engagementRate  Float    @default(0)
+  authenticityScore Float  @default(0)
+  tags            String[]
+  createdAt       DateTime @default(now())
+}
