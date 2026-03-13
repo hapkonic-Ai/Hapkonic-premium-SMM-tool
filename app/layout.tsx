@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -25,12 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${outfit.variable} ${spaceMono.variable} antialiased noise min-h-screen`}
-      >
-        {children}
+      <body className={cn(outfit.className, spaceMono.variable, "bg-background text-foreground antialiased selection:bg-accent-cyan/30 noise min-h-screen")}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
