@@ -39,7 +39,7 @@ export default function OverviewPage() {
           title="Total Followers"
           value={metrics.totalFollowers.toLocaleString()}
           change={metrics.followerGrowth}
-          changeLabel="vs last period"
+          label="vs last period"
           icon={<Users className="w-5 h-5 text-accent-cyan" />}
           isLoading={isLoading}
         />
@@ -47,7 +47,7 @@ export default function OverviewPage() {
           title="Avg. Engagement"
           value={`${metrics.engagementRate}%`}
           change={metrics.engagementGrowth}
-          changeLabel="vs last period"
+          label="vs last period"
           icon={<MessageSquare className="w-5 h-5 text-accent-purple" />}
           isLoading={isLoading}
         />
@@ -55,7 +55,7 @@ export default function OverviewPage() {
           title="Total Reach"
           value={metrics.totalReach.toLocaleString()}
           change={metrics.reachGrowth}
-          changeLabel="vs last period"
+          label="vs last period"
           icon={<MousePointer2 className="w-5 h-5 text-accent-pink" />}
           isLoading={isLoading}
         />
@@ -63,7 +63,7 @@ export default function OverviewPage() {
           title="Impressions"
           value={metrics.totalImpressions.toLocaleString()}
           change={metrics.impressionsGrowth}
-          changeLabel="vs last period"
+          label="vs last period"
           icon={<Eye className="w-5 h-5 text-accent-green" />}
           isLoading={isLoading}
         />

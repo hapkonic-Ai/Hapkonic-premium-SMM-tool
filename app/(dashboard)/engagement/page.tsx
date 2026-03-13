@@ -23,6 +23,7 @@ export default function EngagementPage() {
           title="Likes"
           value="48.2K"
           change={12.5}
+          label="vs last period"
           icon={<Heart className="w-5 h-5 text-pink-500" />}
           isLoading={isLoading}
         />
