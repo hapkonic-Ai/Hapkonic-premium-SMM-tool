@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 import { 
   BarChart3, Users, MessageSquare, TrendingUp, HeartPulse, 
   Target, Zap, PenTool, Layers, Bell, Cpu, Shield, 
-  Settings, ChevronLeft, ChevronRight, LogOut, Orbit
+  Settings, ChevronLeft, ChevronRight, LogOut, Orbit,
+  Link as LinkIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { signOut } from "next-auth/react";
 
 
 const sidebarItems = [
@@ -32,7 +34,12 @@ const sidebarItems = [
   { label: "Tools", type: "header" },
   { icon: PenTool, label: "Scheduler", href: "/scheduler" },
   { icon: Bell, label: "Alerts", href: "/alerts" },
+
+  { label: "System", type: "header" },
+  { icon: LinkIcon, label: "Connections", href: "/settings/connections" },
+  { icon: Settings, label: "Settings", href: "/settings" },
 ];
+
 
 export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -116,11 +123,13 @@ export const Sidebar = () => {
           {!isCollapsed && <span className="text-sm font-medium">Collapse</span>}
         </button>
         <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-accent-pink/60 hover:bg-accent-pink/10 hover:text-accent-pink transition-all w-full"
         >
           <LogOut className="w-5 h-5" />
           {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
         </button>
+
       </div>
     </aside>
   );
