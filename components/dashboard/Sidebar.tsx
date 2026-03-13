@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signOut } from "next-auth/react";
+import { useSidebarStore } from "@/stores/useSidebarStore";
 
 
 const sidebarItems = [
@@ -42,7 +43,7 @@ const sidebarItems = [
 
 
 export const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, toggleCollapsed } = useSidebarStore();
   const pathname = usePathname();
 
   return (
@@ -116,7 +117,7 @@ export const Sidebar = () => {
       {/* Sidebar Footer */}
       <div className="p-4 border-t border-glass-border flex flex-col gap-2">
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggleCollapsed}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-all w-full"
         >
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}

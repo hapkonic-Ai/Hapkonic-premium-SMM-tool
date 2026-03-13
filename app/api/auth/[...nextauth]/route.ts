@@ -61,6 +61,42 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       version: "2.0",
     }),
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      type: "oauth",
+      authorization: "https://www.linkedin.com/oauth/v2/authorization?scope=r_liteprofile%20r_emailaddress",
+      token: "https://www.linkedin.com/oauth/v2/accessToken",
+      userinfo: "https://api.linkedin.com/v2/me",
+      clientId: process.env.LINKEDIN_CLIENT_ID,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
+          email: null,
+          image: null,
+        }
+      },
+    },
+    {
+      id: "instagram",
+      name: "Instagram",
+      type: "oauth",
+      authorization: "https://api.instagram.com/oauth/authorize?scope=user_profile,user_media",
+      token: "https://api.instagram.com/oauth/access_token",
+      userinfo: "https://graph.instagram.com/me?fields=id,username,account_type",
+      clientId: process.env.INSTAGRAM_CLIENT_ID,
+      clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: profile.username,
+          email: null,
+          image: null,
+        }
+      },
+    },
   ],
   callbacks: {
     async session({ session, token }) {
