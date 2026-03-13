@@ -29,7 +29,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(outfit.className, spaceMono.variable, "bg-background text-foreground antialiased selection:bg-accent-cyan/30 noise min-h-screen")}>
         <AuthProvider>
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </AuthProvider>
       </body>
     </html>
