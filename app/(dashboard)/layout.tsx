@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { cn } from "@/lib/utils";
@@ -12,6 +14,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isCollapsed } = useSidebarStore();
+  const [mounted, setMounted] = React.useState(false);
+
+  // Prevent hydration mismatch for persisted store values
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   
   return (
     <div className="flex min-h-screen bg-background text-foreground overflow-hidden">
@@ -19,7 +27,7 @@ export default function DashboardLayout({
       <div 
         className={cn(
           "flex flex-col flex-1 relative overflow-hidden min-w-0 transition-all duration-300",
-          isCollapsed ? "md:pl-20" : "md:pl-64"
+          (!mounted || !isCollapsed) ? "md:pl-64" : "md:pl-20"
         )}
       >
         <TopBar />

@@ -45,6 +45,22 @@ const sidebarItems = [
 export const Sidebar = () => {
   const { isCollapsed, toggleCollapsed } = useSidebarStore();
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <aside className={cn(
+        "fixed left-0 top-0 h-screen glass border-y-0 border-l-0 z-[50] w-20 flex flex-col items-center py-6",
+        isCollapsed ? "w-20" : "w-64"
+      )}>
+        <div className="w-8 h-8 rounded-lg bg-white/5 animate-pulse" />
+      </aside>
+    );
+  }
 
   return (
     <aside 
